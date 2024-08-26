@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Number</title>
+    <style>
+        body {
+            background-color: #2e3b4e;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .dice {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border: 5px solid #333;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.6s ease;
+            position: relative;
+        }
+
+        .dice:hover {
+            background-color: #f1f1f1;
+        }
+
+        .rotate {
+            animation: rotateDice 0.6s ease;
+        }
+
+        @keyframes rotateDice {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(180deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #chekmate {
+            margin-top: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            padding: 10px;
+            width: 50%;
+            margin: 20px auto;
+            background-color: #444b56;
+            border-radius: 10px;
+        }
+
+        .dice-dot {
+            width: 20px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 50%;
+            margin: auto;
+        }
+
+        .dice-face {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+        }
+
+        .grid-area-0 {
+            grid-area: 1 / 1 / 2 / 2;
+        }
+
+        .grid-area-1 {
+            grid-area: 1 / 2 / 2 / 3;
+        }
+
+        .grid-area-2 {
+            grid-area: 1 / 3 / 2 / 4;
+        }
+
+        .grid-area-3 {
+            grid-area: 2 / 1 / 3 / 2;
+        }
+
+        .grid-area-4 {
+            grid-area: 2 / 2 / 3 / 3;
+        }
+
+        .grid-area-5 {
+            grid-area: 2 / 3 / 3 / 4;
+        }
+
+        .grid-area-6 {
+            grid-area: 3 / 1 / 4 / 2;
+        }
+
+        .grid-area-7 {
+            grid-area: 3 / 2 / 4 / 3;
+        }
+
+        .grid-area-8 {
+            grid-area: 3 / 3 / 4 / 4;
+        }
+
+        .dice-number {
+            font-size: 2em;
+            color: #333;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bet-buttons {
+            margin: 20px 0;
+        }
+
+        .bet-buttons button {
+            background-color: #444b56;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .bet-buttons button:hover {
+            background-color: #555b67;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #444b56;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-message {
+            font-size: 1.5em;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            width: 80%;
+        }
+
+        .win {
+            background-color: #28a745;
+        }
+
+        .lose {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>2X Money if You Guess Right!</h1>
+        <div class="bet-buttons">
+            <button onclick="setBetAmount(100)">Bet 100</button>
+            <button onclick="setBetAmount(200)">Bet 200</button>
+            <button onclick="setBetAmount(500)">Bet 500</button>
+            <button onclick="setBetAmount(1000)">Bet 1000</button>
+        </div>
+        <input type="number" id="userGuess" placeholder="Enter your guess (1-6)">
+        <div class="dice" id="dice" onclick="betbet()">
+            <div class="dice-face" id="diceFace">
+                <!-- Dots will be dynamically generated here -->
+            </div>
+            <div class="dice-number" id="diceNumber"></div>
+        </div>
+        <h1 id="chekmate"></h1>
+        <div id="resultMessage" class="result-message"></div>
+
+    </center>
+    <script>
+        let betAmount = 0;
+
+        function setBetAmount(amount) {
+            betAmount = amount;
+            const resultMessage = document.getElementById('resultMessage');
+            resultMessage.className = 'result-message'; // Reset class
+            resultMessage.innerHTML = "You have selected to bet " + betAmount;
+        }
+
+        function betbet() {
+            if (betAmount === 0) {
+                const resultMessage = document.getElementById('resultMessage');
+                resultMessage.className = 'result-message lose';
+                resultMessage.innerHTML = "Please select a bet amount first!";
+                return;
+            }
+
+            let userGuess = document.getElementById('userGuess').value;
+            if (userGuess < 1 || userGuess > 6) {
+                const resultMessage = document.getElementById('resultMessage');
+                resultMessage.className = 'result-message lose';
+                resultMessage.innerHTML = "Please enter a valid guess (1-6)";
+                return;
+            }
+
+            let rand_no = Math.floor(Math.random() * 6 + 1);
+            let dice = document.getElementById('dice');
+            let diceFace = document.getElementById('diceFace');
+            let diceNumber = document.getElementById('diceNumber');
+            let num = document.getElementById('chekmate');
+            let resultMessage = document.getElementById('resultMessage');
+
+            // Rotate the dice
+            dice.classList.add('rotate');
+
+            // Remove the rotation class after the animation ends
+            setTimeout(() => {
+                dice.classList.remove('rotate');
+            }, 600);
+
+            num.innerHTML = rand_no;
+            diceNumber.innerHTML = rand_no;
+
+            diceFace.innerHTML = ''; // Clear the dice face
+
+            let dotPositions = [
+                [], // No dots for index 0
+                [4], // 1 dot in the center
+                [0, 8], // 2 dots (top-left, bottom-right)
+                [0, 4, 8], // 3 dots (diagonal)
+                [0, 2, 6, 8], // 4 dots (corners)
+                [0, 2, 4, 6, 8], // 5 dots (corners + center)
+                [0, 2, 3, 5, 6, 8] // 6 dots (two diagonals)
+            ][rand_no];
+
+            dotPositions.forEach(index => {
+                let dot = document.createElement('div');
+                dot.classList.add('dice-dot', `grid-area-${index}`);
+                diceFace.appendChild(dot);
+            });
+
+            // Check if the user's guess is correct
+            if (parseInt(userGuess) === rand_no) {
+                resultMessage.className = 'result-message win';
+                resultMessage.innerHTML = "Congratulations! You win " + (betAmount * 2) + "!";
+            } else {
+                resultMessage.className = 'result-message lose';
+                resultMessage.innerHTML = "Try again! The number was " + rand_no;
+            }
+        }
+    </script>
+</body>
+
+</html>
